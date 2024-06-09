@@ -1,2 +1,2 @@
-# NetworkLayer
-This is a Network Layer without any third party library
+# Network Layer
+This is a Network Layer written in Swift Language, without any third party library.
