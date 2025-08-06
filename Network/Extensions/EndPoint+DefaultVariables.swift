@@ -1,6 +1,5 @@
 //
 //  EndPoint+DefaultVariables.swift
-//  StarzPlay_App
 //
 //  Created by Hassam Ali on 11/04/2024.
 //
@@ -17,10 +16,21 @@ public extension Endpoint {
         .jsonEncoding
     }
 
+    var parameters: [String: Any] {
+        [:]
+    }
+
+    var headers: HTTPHeaders {
+        [:]
+    }
+
     func defaultHeaders() -> HTTPHeaders {
         var headers: HTTPHeaders = [:]
         headers["language"] = "en-US"
         headers["Authorization"] = NetworkInitializationManager.shared.getAPIKey()
+        for (key, value) in DeviceInfo.shared.asDictionary {
+            headers[key] = value
+        }
         return headers
     }
 }

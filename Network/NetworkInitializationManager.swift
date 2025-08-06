@@ -1,6 +1,5 @@
 //
 //  NetworkInitializationManager.swift
-//  StarzPlay_App
 //
 //  Created by Hassam Ali on 12/04/2024.
 //

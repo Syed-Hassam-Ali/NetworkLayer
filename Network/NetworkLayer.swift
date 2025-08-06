@@ -10,17 +10,23 @@ import Foundation
 public enum HTTPMethod: String {
     case GET
     case POST
+    case PUT
+    case DELETE
 }
 
 public enum ParameterEncoding {
     case jsonEncoding
+    case urlEncoding
+    case formURLEncoding
 
-    func applyEncoding(request: inout URLRequest,
-                       params: [String: Any]) {
+    func applyEncoding(request: inout URLRequest, params: [String: Any]) {
         switch self {
         case .jsonEncoding:
-            JSONParameterEncoder().encode(request: &request,
-                                          params: params)
+            JSONParameterEncoder().encode(request: &request, params: params)
+        case .urlEncoding:
+            URLParameterEncoder().encode(request: &request, params: params)
+        case .formURLEncoding:
+            FormURLEncoder().encode(request: &request, params: params)
         }
     }
 }
@@ -30,10 +36,10 @@ public typealias HTTPHeaders = [String: String]
 public protocol Endpoint {
     associatedtype ResponseType: Codable
     var pathURL: String { get }
-    var httpMethod: HTTPMethod { get }
-    var headers: HTTPHeaders { get }
-    var parameters: [String: Any] { get }
     var baseURL: String { get }
+    var httpMethod: HTTPMethod { get }
     var encoding: ParameterEncoding { get }
+    var parameters: [String: Any] { get }
+    var headers: HTTPHeaders { get }
 }
 

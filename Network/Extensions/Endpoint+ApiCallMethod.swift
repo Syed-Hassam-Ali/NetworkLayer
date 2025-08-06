@@ -1,6 +1,5 @@
 //
 //  Endpoint+ApiCallMethod.swift
-//  StarzPlay_App
 //
 //  Created by Hassam Ali on 11/04/2024.
 //
@@ -18,9 +17,13 @@ public extension Endpoint {
                 completion(.failure(getError(for: .errorReturnedByAPI(error: error))))
                 return
             }
-            guard let response = response as? HTTPURLResponse,
-                  (200 ..< 300).contains(response.statusCode) else {
-                completion(.failure(getError(for: .statusCodeIsNot200)))
+            guard let response = response as? HTTPURLResponse else {
+                completion(.failure(getError(for: .noResponseFound)))
+                return
+            }
+            let statusCode = response.statusCode
+            guard (200 ..< 300).contains(statusCode) else {
+                completion(.failure(getError(for: .statusCodeIsNot200(statusCode))))
                 return
             }
             guard let data = data else {
@@ -54,10 +57,13 @@ public extension Endpoint {
         for (key, value) in headers {
             request.setValue(value, forHTTPHeaderField: key)
         }
+        for (key, value) in self.defaultHeaders() {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
     }
 
     private func applyEncoding(request: inout URLRequest) {
-        
+        self.encoding.applyEncoding(request: &request, params: self.parameters)
     }
 
     private func getError(for errorType: APIErrorsType) -> Error {
@@ -68,10 +74,37 @@ public extension Endpoint {
     }
 
     private func logCurl(request: URLRequest) {
-        // TODO: - Update printing curl
-        debugPrint("------- Curl Print -----------")
-        debugPrint(request.debugDescription)
-        debugPrint("--------- Curl End -----------")
+        var curlCommand = "curl"
+
+        // Method
+        let method = request.httpMethod ?? "GET"
+        if method != "GET" {
+            curlCommand += " -X \(method)"
+        }
+
+        // Headers
+        if let headers = request.allHTTPHeaderFields {
+            for (key, value) in headers {
+                curlCommand += " -H '\(key): \(value)'"
+            }
+        }
+
+        // Body
+        if let httpBody = request.httpBody,
+           let bodyString = String(data: httpBody, encoding: .utf8),
+           !bodyString.isEmpty {
+            curlCommand += " -d '\(bodyString)'"
+        }
+
+        // URL
+        if let url = request.url?.absoluteString {
+            curlCommand += " '\(url)'"
+        }
+
+        // Final print
+        print("------- cURL Request --------")
+        print(curlCommand)
+        print("--------- End cURL ----------")
     }
 
 }
